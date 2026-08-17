@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import {
   SPOT_EVENT_KINDS,
   transitionSpot,
@@ -7,8 +7,25 @@ import {
   type SpotStatus,
 } from "@parking-network/domain";
 import { db } from "./client";
-import { parkingEvent, parkingSpot } from "./schema";
+import { floor, parkingEvent, parkingSpot, parkingZone } from "./schema";
 import { resolveFacilityTopic } from "./topics";
+
+/**
+ * D12-style defense in depth for the device-authenticated oRPC
+ * procedures (packages/api/src/session.ts): a device token proves
+ * which facility a device belongs to, so a spot id from a different
+ * facility must be rejected before applySpotTransition ever runs, not
+ * just fail for an unrelated reason.
+ */
+export async function isSpotInFacility(spotId: string, facilityId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ spotId: parkingSpot.id })
+    .from(parkingSpot)
+    .innerJoin(parkingZone, eq(parkingSpot.zoneId, parkingZone.id))
+    .innerJoin(floor, eq(parkingZone.floorId, floor.id))
+    .where(and(eq(parkingSpot.id, spotId), eq(floor.facilityId, facilityId)));
+  return row !== undefined;
+}
 
 const KIND_BY_EVENT: Record<SpotEvent, SpotEventKind> = {
   occupy: SPOT_EVENT_KINDS.OCCUPY,

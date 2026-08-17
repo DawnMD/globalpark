@@ -14,3 +14,17 @@ export const authed = os.$context<AuthContext>().use(({ context, next }) => {
   }
   return next({ context: { session: context.session } });
 });
+
+/**
+ * The terminal's counterpart to `authed`: requires a verified device
+ * token (D16) instead of a user session. Per-facility scoping happens
+ * inside each handler (session.ts), same reasoning as `authed` --
+ * it needs the validated input, not just the fact that some device
+ * authenticated.
+ */
+export const deviceAuthed = os.$context<AuthContext>().use(({ context, next }) => {
+  if (!context.device) {
+    throw new ORPCError("UNAUTHORIZED");
+  }
+  return next({ context: { device: context.device } });
+});
