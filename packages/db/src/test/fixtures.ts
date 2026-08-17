@@ -55,10 +55,10 @@ export async function getZoneHeldCount(zoneId: string): Promise<number> {
   return row.held_count;
 }
 
-export async function countEvents(zoneId: string, kind: string): Promise<number> {
+export async function countEvents(facilityId: string, kind: string): Promise<number> {
   const [row] = await rawSql`
     SELECT count(*)::int AS count FROM parking_event
-    WHERE topic = ${`zone:${zoneId}`} AND kind = ${kind}
+    WHERE topic = ${`facility:${facilityId}`} AND kind = ${kind}
   `;
   return row.count;
 }

@@ -29,6 +29,13 @@
       "when": 1786986000000,
       "tag": "0003_expire_holds_sweeper",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786990000000,
+      "tag": "0004_facility_scoped_topics",
+      "breakpoints": true
     }
   ]
 }

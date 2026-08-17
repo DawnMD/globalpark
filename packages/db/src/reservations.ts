@@ -1,7 +1,25 @@
 import { and, eq, sql } from "drizzle-orm";
 import { RESERVATION_EVENT_KINDS } from "@parking-network/domain";
 import { db } from "./client";
-import { parkingEvent, parkingZone, reservation } from "./schema";
+import { floor, parkingEvent, parkingZone, reservation } from "./schema";
+
+/**
+ * D3's SSE route is topic-scoped per facility (an operator dashboard
+ * watches a whole facility, not one zone), so every parking_event this
+ * module writes carries a `facility:<id>` topic -- resolved via
+ * zone -> floor -> facility, the same tenancy chain D12 already uses.
+ */
+async function resolveFacilityTopic(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  zoneId: string,
+): Promise<string> {
+  const [row] = await tx
+    .select({ facilityId: floor.facilityId })
+    .from(parkingZone)
+    .innerJoin(floor, eq(parkingZone.floorId, floor.id))
+    .where(eq(parkingZone.id, zoneId));
+  return `facility:${row.facilityId}`;
+}
 
 export type CreateHoldInput = {
   zoneId: string;
@@ -58,7 +76,7 @@ export async function createHold(input: CreateHoldInput): Promise<CreateHoldResu
       .returning();
 
     await tx.insert(parkingEvent).values({
-      topic: `zone:${input.zoneId}`,
+      topic: await resolveFacilityTopic(tx, input.zoneId),
       kind: RESERVATION_EVENT_KINDS.HELD,
       entityType: "reservation",
       entityId: row.id,
@@ -106,7 +124,7 @@ export async function releaseHold(reservationId: string): Promise<ReleaseHoldRes
         .where(eq(parkingZone.id, row.zoneId));
 
       await tx.insert(parkingEvent).values({
-        topic: `zone:${row.zoneId}`,
+        topic: await resolveFacilityTopic(tx, row.zoneId),
         kind: RESERVATION_EVENT_KINDS.RELEASED,
         entityType: "reservation",
         entityId: row.id,

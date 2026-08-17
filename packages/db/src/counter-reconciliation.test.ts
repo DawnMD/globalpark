@@ -45,9 +45,9 @@ describe("D6/D7: zone counter matches the event log it was derived from", () => 
 
             const [heldCount, heldEvents, releasedEvents, expiredEvents] = await Promise.all([
               getZoneHeldCount(fixture.zoneId),
-              countEvents(fixture.zoneId, "reservation.held"),
-              countEvents(fixture.zoneId, "reservation.released"),
-              countEvents(fixture.zoneId, "reservation.expired"),
+              countEvents(fixture.facilityId, "reservation.held"),
+              countEvents(fixture.facilityId, "reservation.released"),
+              countEvents(fixture.facilityId, "reservation.expired"),
             ]);
 
             const reconstructed = heldEvents - releasedEvents - expiredEvents;

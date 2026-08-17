@@ -26,7 +26,7 @@ describe("createHold / releaseHold (D4, D7)", () => {
 
     expect(result.ok).toBe(true);
     expect(await getZoneHeldCount(fixture.zoneId)).toBe(1);
-    expect(await countEvents(fixture.zoneId, "reservation.held")).toBe(1);
+    expect(await countEvents(fixture.facilityId, "reservation.held")).toBe(1);
   });
 
   it("returns CONFLICT once the zone is fully held, without touching the counter", async () => {
@@ -48,7 +48,7 @@ describe("createHold / releaseHold (D4, D7)", () => {
 
     expect(result).toEqual({ ok: true });
     expect(await getZoneHeldCount(fixture.zoneId)).toBe(0);
-    expect(await countEvents(fixture.zoneId, "reservation.released")).toBe(1);
+    expect(await countEvents(fixture.facilityId, "reservation.released")).toBe(1);
   });
 
   it("releaseHold on an unknown id reports NOT_FOUND", async () => {
@@ -100,7 +100,7 @@ describe("D6: hold expiry under a clock jumped forward mid-transaction", () => {
     const releaseResult = await releaseHold(hold.reservationId);
     expect(releaseResult).toEqual({ ok: false, reason: "EXPIRED" });
     expect(await getZoneHeldCount(fixture.zoneId)).toBe(0);
-    expect(await countEvents(fixture.zoneId, "reservation.expired")).toBe(1);
+    expect(await countEvents(fixture.facilityId, "reservation.expired")).toBe(1);
 
     // Capacity is available again for a new hold.
     const thirdAttempt = await createHold({ zoneId: fixture.zoneId, userId: randomUUID() });
@@ -116,6 +116,6 @@ describe("D6: hold expiry under a clock jumped forward mid-transaction", () => {
 
     expect(expiredCount).toBeGreaterThanOrEqual(1);
     expect(await getZoneHeldCount(fixture.zoneId)).toBe(0);
-    expect(await countEvents(fixture.zoneId, "reservation.expired")).toBe(1);
+    expect(await countEvents(fixture.facilityId, "reservation.expired")).toBe(1);
   }, 10_000);
 });
