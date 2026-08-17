@@ -1,0 +1,12 @@
+{
+  "name": "@parking-network/web",
+  "private": true,
+  "version": "0.0.0",
+  "description": "User app and operator dashboard (route groups in one Next.js app). Built out starting Phase 3 (operator dashboard) and Phase 6 (consumer app).",
+  "scripts": {
+    "build": "echo \"web: nothing to build yet (Phase 3+)\"",
+    "lint": "echo \"web: nothing to lint yet (Phase 3+)\"",
+    "typecheck": "echo \"web: nothing to typecheck yet (Phase 3+)\"",
+    "test": "echo \"web: no tests yet (Phase 3+)\""
+  }
+}

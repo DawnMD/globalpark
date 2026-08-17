@@ -1,0 +1,12 @@
+{
+  "name": "@parking-network/domain",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Spot and reservation state machines as pure functions, event types. Built out starting Phase 2 — the DB's constraints are the actual guarantee (D8), this package is documentation and UX guardrail.",
+  "scripts": {
+    "build": "echo \"domain: nothing to build yet (Phase 2+)\"",
+    "lint": "echo \"domain: nothing to lint yet (Phase 2+)\"",
+    "typecheck": "echo \"domain: nothing to typecheck yet (Phase 2+)\"",
+    "test": "echo \"domain: no tests yet (Phase 2+)\""
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@parking-network/terminal",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Standalone Node terminal process + device simulator, with a durable SQLite queue on disk (D16). Built out starting Phase 4 (online terminal) and Phase 5 (offline queue).",
+  "scripts": {
+    "build": "echo \"terminal: nothing to build yet (Phase 4+)\"",
+    "lint": "echo \"terminal: nothing to lint yet (Phase 4+)\"",
+    "typecheck": "echo \"terminal: nothing to typecheck yet (Phase 4+)\"",
+    "test": "echo \"terminal: no tests yet (Phase 4+)\""
+  }
+}
