@@ -31,6 +31,9 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
       DATABASE_URL_SESSION: postgresql://postgres:postgres@localhost:5432/postgres
       DATABASE_URL_DIRECT: postgresql://postgres:postgres@localhost:5432/postgres
+      # Not secret -- CI's database is thrown away after the run.
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-real
+      BETTER_AUTH_URL: http://localhost:3000
 
     steps:
       - uses: actions/checkout@v4

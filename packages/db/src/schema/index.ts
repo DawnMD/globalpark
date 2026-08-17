@@ -1,4 +1,6 @@
 export * from "./operator";
+export * from "./auth";
+export * from "./operator-member";
 export * from "./facility";
 export * from "./floor";
 export * from "./zone";

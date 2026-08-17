@@ -14,6 +14,17 @@ const queryClient = postgres(env.DATABASE_URL, { prepare: false });
 export const db = drizzle(queryClient, { schema });
 
 /**
+ * For one-shot scripts (seed.ts) that import `auth` (and therefore
+ * this module) and need the process to actually exit afterward --
+ * `queryClient`'s open sockets otherwise keep the event loop alive
+ * indefinitely. Long-lived servers (the Next.js app) should never
+ * call this.
+ */
+export function closeDb(): Promise<void> {
+  return queryClient.end();
+}
+
+/**
  * Session-mode connection (port 5432), required for `LISTEN` (D3b).
  * `LISTEN` does not work through Supabase's transaction-mode pooler.
  * Create one of these per SSE connection, never for ordinary queries —
