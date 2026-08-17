@@ -40,6 +40,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@orpc/client':
+        specifier: ^1.15.0
+        version: 1.15.0
+      '@orpc/server':
+        specifier: ^1.15.0
+        version: 1.15.0
       '@parking-network/api':
         specifier: workspace:*
         version: link:../../packages/api
