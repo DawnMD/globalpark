@@ -39,16 +39,25 @@ importers:
   apps/terminal: {}
 
   apps/web:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
+  packages/api:
     dependencies:
       '@orpc/server':
         specifier: ^1.15.0
         version: 1.15.0
       '@parking-network/db':
         specifier: workspace:*
-        version: link:../../packages/db
+        version: link:../db
       '@parking-network/domain':
         specifier: workspace:*
-        version: link:../../packages/domain
+        version: link:../domain
       zod:
         specifier: ^3.23.8
         version: 3.25.76

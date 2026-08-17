@@ -3,8 +3,9 @@ import { z } from "zod";
 import { createHold, releaseHold } from "@parking-network/db/src/reservations";
 
 /**
- * D13: the operator dashboard is a route group in this app, not a
- * separate deployable, so its API layer lives here too. These
+ * D13: the operator dashboard is a route group in the web app, not a
+ * separate deployable, but its oRPC procedures live in this standalone
+ * package so they can be consumed as a typed client from any app. These
  * procedures are deliberately headless in Phase 2 -- `.callable()`
  * makes each one invocable directly (see reservation.test.ts), with no
  * HTTP route or Next.js scaffold required until Phase 3 mounts one.

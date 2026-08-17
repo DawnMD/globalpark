@@ -9,7 +9,7 @@ import { createHoldProcedure, releaseHoldProcedure } from "./reservation";
  * server, no Next.js route, matching Phase 2's "headless" scope (the
  * Next.js scaffold arrives Phase 3). Fixture setup is intentionally
  * minimal and local to this file rather than reaching into
- * packages/db's test helpers, keeping the app/package boundary honest.
+ * packages/db's test helpers, keeping the package boundary honest.
  */
 const sql = postgres(env.DATABASE_URL_SESSION, { prepare: false });
 
