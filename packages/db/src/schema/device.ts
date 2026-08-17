@@ -12,7 +12,9 @@ export const device = pgTable("device", {
     .notNull()
     .references(() => facility.id),
   kind: deviceKindEnum("kind").notNull(),
-  tokenHash: text("token_hash").notNull(),
+  // Unique so verifyDeviceToken's lookup-by-hash (Phase 4, D16) is a
+  // point lookup, and so two devices can never collide on a token.
+  tokenHash: text("token_hash").notNull().unique(),
   // Populated starting Phase 7 (heartbeats, stale-device alerts).
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

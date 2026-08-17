@@ -43,6 +43,13 @@
       "when": 1786990100000,
       "tag": "0005_better_auth_and_operator_membership",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786974078326,
+      "tag": "0006_device_token_unique",
+      "breakpoints": true
     }
   ]
 }
