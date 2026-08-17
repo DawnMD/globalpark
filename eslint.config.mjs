@@ -13,6 +13,7 @@ export default tseslint.config(
       "**/node_modules/**",
       "**/coverage/**",
       "packages/db/migrations/**",
+      "**/next-env.d.ts",
     ],
   },
   js.configs.recommended,
@@ -28,6 +29,17 @@ export default tseslint.config(
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+    },
+  },
+  {
+    // apps/web runs both server code (route handlers) and browser code
+    // (client components) in the same Next.js app -- both globals apply.
+    files: ["apps/web/**"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
     },
   },
   prettierConfig,
