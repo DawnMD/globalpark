@@ -1,0 +1,10 @@
+{
+  // Emit config: src only, so dist mirrors src without a leading src/ segment.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}

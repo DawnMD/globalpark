@@ -1,8 +1,12 @@
 {
+  // Checking config: covers src *and* the root-level config files, so editors
+  // and `pnpm typecheck` see the same set of files. `drizzle.config.ts` lives
+  // outside src, which is why this config sets no `rootDir` -- emit is handled
+  // separately by tsconfig.build.json.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
+    "noEmit": true,
+    "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src", "drizzle.config.ts"]
 }

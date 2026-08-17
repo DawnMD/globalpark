@@ -1,0 +1,13 @@
+{
+  // Covers the root-level tooling configs so editors resolve them against a
+  // real project instead of an inferred one. Workspace source is typechecked
+  // by each package's own tsconfig.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "types": ["node"]
+  },
+  "include": ["*.mjs", "*.ts"]
+}
