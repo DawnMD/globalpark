@@ -3,23 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "User app and operator dashboard (route groups in one Next.js app). The Next.js scaffold itself arrives Phase 3; the oRPC procedure layer (Phase 2) is deliberately headless until then.",
+  "description": "User app and operator dashboard (route groups in one Next.js app). The oRPC procedure layer now lives in packages/api; the Next.js scaffold that consumes it arrives Phase 3.",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@orpc/server": "^1.15.0",
-    "@parking-network/db": "workspace:*",
-    "@parking-network/domain": "workspace:*",
-    "zod": "^3.23.8"
+    "test": "echo \"web: no tests yet\""
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "postgres": "^3.4.5",
-    "typescript": "^5.6.3",
-    "vitest": "^3.2.4"
+    "typescript": "^5.6.3"
   }
 }
