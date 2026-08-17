@@ -1,5 +1,6 @@
 import { RPCHandler } from "@orpc/server/fetch";
 import { router } from "@parking-network/api";
+import { auth } from "@parking-network/db/src/auth";
 
 /**
  * D13: the oRPC procedure layer lives in packages/api so it can be
@@ -10,9 +11,14 @@ import { router } from "@parking-network/api";
 const handler = new RPCHandler(router);
 
 async function handleRequest(request: Request) {
+  // Resolved once per request and handed to every procedure as
+  // context.session -- facility.ts's `authed` middleware is what
+  // actually enforces it, this is just where the value comes from.
+  const session = await auth.api.getSession({ headers: request.headers });
+
   const { response } = await handler.handle(request, {
     prefix: "/api/rpc",
-    context: {},
+    context: { session },
   });
   return response ?? new Response("Not found", { status: 404 });
 }

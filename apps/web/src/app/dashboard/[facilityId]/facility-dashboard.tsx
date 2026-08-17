@@ -1,10 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc-client";
 import { useTopicInvalidation } from "@/lib/use-topic-invalidation";
 
 export function FacilityDashboard({ facilityId }: { facilityId: string }) {
+  const router = useRouter();
   const topic = `facility:${facilityId}`;
 
   // D3 end to end: this is the one subscription that keeps both
@@ -35,6 +38,12 @@ export function FacilityDashboard({ facilityId }: { facilityId: string }) {
   return (
     <main>
       <h1>Facility Occupancy</h1>
+      <button
+        type="button"
+        onClick={() => authClient.signOut().then(() => router.push("/sign-in"))}
+      >
+        Sign out
+      </button>
 
       <section aria-label="Zone counters">
         <p>
