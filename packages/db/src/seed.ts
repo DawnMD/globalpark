@@ -1,6 +1,7 @@
 import postgres from "postgres";
 import { auth } from "./auth";
 import { closeDb } from "./client";
+import { issueDeviceToken } from "./devices";
 import { env } from "./env";
 
 /**
@@ -12,6 +13,10 @@ import { env } from "./env";
  * below), created through auth.api.signUpEmail rather than a hand-
  * rolled INSERT so the password hash matches whatever Better Auth
  * actually verifies against.
+ *
+ * Phase 4 adds a demo TERMINAL device token for the seeded facility
+ * (D16), printed once at the end -- copy it into apps/terminal/.env's
+ * TERMINAL_DEVICE_TOKEN to run the terminal against this seed data.
  */
 const FLOORS_PER_FACILITY = 3;
 const ZONES_PER_FLOOR = 2;
@@ -84,6 +89,13 @@ async function main() {
 
   console.log(`Demo operator login: ${DEMO_OPERATOR_EMAIL} / ${DEMO_OPERATOR_PASSWORD}`);
   console.log(`(facility ${facilityId} is now owned by that login)`);
+
+  // issueDeviceToken goes through packages/db's own (transaction-
+  // pooled) connection, same reasoning as auth.api.signUpEmail above --
+  // it can't participate in the sql.begin() transaction either.
+  const { token: terminalToken } = await issueDeviceToken(facilityId, "TERMINAL");
+  console.log(`Demo terminal device token: ${terminalToken}`);
+  console.log("(put this in apps/terminal/.env as TERMINAL_DEVICE_TOKEN)");
 
   await sql.end();
   // auth.api.signUpEmail pulled in packages/db's own connection pool
