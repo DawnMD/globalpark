@@ -10,6 +10,10 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Next 16 writes apps/web/AGENTS.md and CLAUDE.md on every `next dev`
+  // otherwise. This repo keeps its own agent configuration, so opt out
+  // rather than carry a generated CLAUDE.md scoped to this app.
+  agentRules: false,
 };
 
 export default nextConfig;
