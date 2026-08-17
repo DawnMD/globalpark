@@ -1,9 +1,11 @@
 # ADR 0004: Self-built SSE over LISTEN/NOTIFY, with a documented scaling ceiling
 
 ## Status
+
 Accepted
 
 ## Context
+
 Realtime updates (availability, occupancy) need to reach open dashboards and
 the consumer app. Options considered: Supabase Realtime (managed), a
 dedicated fan-out process, or building SSE ourselves on top of Postgres
@@ -16,11 +18,12 @@ response open and emit events as they arrive using the same runtime as the
 rest of the API — it's supported, not a hack. The binding constraint is
 function duration (300s on Hobby, up to 800s on Pro with Fluid Compute,
 1800s in beta for specific runtimes), not capability. Because this design
-streams *invalidation hints* rather than state, and `EventSource` reconnects
+streams _invalidation hints_ rather than state, and `EventSource` reconnects
 automatically with `Last-Event-ID` resume, periodic reconnection is a
 non-event rather than a design problem.
 
 ## Decision
+
 Build SSE ourselves: `LISTEN`/`NOTIFY` → an SSE route handler in Next.js, on
 Vercel with Fluid Compute enabled and `maxDuration` set near the plan
 ceiling. The `parking_event.id` is emitted as the SSE event id, so
@@ -36,20 +39,22 @@ data: {"topic":"facility:42","kind":"availability"}
 ```
 
 ### Connection discipline this requires (see also `packages/db` client setup)
+
 `LISTEN` does not work through Supabase's transaction-mode pooler
 (open feature request since 2023). Two connection strings are required:
 
-| Purpose | Connection | Why |
-|---|---|---|
-| Ordinary queries/mutations | Transaction pooler, port 6543 | Serverless-safe, high concurrency |
+| Purpose                                  | Connection                      | Why                                 |
+| ---------------------------------------- | ------------------------------- | ----------------------------------- |
+| Ordinary queries/mutations               | Transaction pooler, port 6543   | Serverless-safe, high concurrency   |
 | The `LISTEN` connection in the SSE route | Session pooler (5432) or direct | Session state required for `LISTEN` |
-| Migrations | Direct | Needs session-level state |
+| Migrations                               | Direct                          | Needs session-level state           |
 
 `prepare: false` is required on the transaction-pooled postgres-js client —
 transaction pooling and prepared statements are incompatible, and the
 failure mode is intermittent and confusing rather than a clean error.
 
 ## Consequences
+
 - Each open SSE connection holds one Postgres session connection for its
   lifetime. This — not Vercel's timeout — is the real ceiling on the design.
   Fine for operator dashboards and a simulator; would not survive ten

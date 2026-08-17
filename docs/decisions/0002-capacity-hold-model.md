@@ -1,9 +1,11 @@
 # ADR 0002: Reservations are capacity holds, not spot claims
 
 ## Status
+
 Accepted
 
 ## Context
+
 A reservation could either name a specific physical spot (e.g. bay A102) or
 hold a unit of capacity in a zone, with the physical spot assigned at the
 gate. Naming a specific bay is how naive designs work, but it has no
@@ -11,6 +13,7 @@ enforcement mechanism against a stranger physically parking in that bay
 before the reservation holder arrives.
 
 ## Decision
+
 A reservation holds a unit of capacity in a `parking_zone`, not a specific
 `parking_spot`. The physical spot is assigned at the gate when a session
 starts.
@@ -30,6 +33,7 @@ Zero rows returned = CONFLICT. Backed by
 if application code has a bug.
 
 ## Consequences
+
 - `parking_spot.status` is physical-occupancy-only, written exclusively by
   terminal/sensor events (ADR 0003, D5). `RESERVED` does not exist as a spot
   state.

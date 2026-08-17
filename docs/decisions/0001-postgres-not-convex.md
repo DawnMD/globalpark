@@ -1,9 +1,11 @@
 # ADR 0001: PostgreSQL, not Convex
 
 ## Status
+
 Accepted
 
 ## Context
+
 The project's stated purpose is to learn concurrency, event-driven design, and
 distributed-systems failure modes. Convex is technically capable of the
 concurrency requirements here (serializable mutations, reactive queries), but
@@ -21,9 +23,11 @@ Two concrete disqualifiers beyond the philosophical one:
   slower for this developer, which was Convex's main advantage.
 
 ## Decision
+
 Postgres (via Supabase) is the primary datastore. No Convex.
 
 ## Consequences
+
 - We own connection-pooling discipline (see ADR 0004) instead of getting it
   for free.
 - We own realtime delivery (`LISTEN`/`NOTIFY` → SSE) instead of getting

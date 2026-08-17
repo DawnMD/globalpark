@@ -15,7 +15,7 @@ This supersedes the open questions in §17 and §21 of the original proposal. Ev
 Two concrete disqualifiers beyond the philosophical one:
 
 - **Geospatial.** "Nearby parking" is in the MVP. PostGIS gives `ST_DWithin` over a GiST index for free; Convex has no native geospatial index and would mean hand-rolled bounding-box scans.
-- **Familiarity cost is already paid.** The Prisma/oRPC/Postgres path is not slower *for this developer*, which was Convex's main advantage in the table.
+- **Familiarity cost is already paid.** The Prisma/oRPC/Postgres path is not slower _for this developer_, which was Convex's main advantage in the table.
 
 ## D2. Drizzle over Prisma
 
@@ -25,7 +25,7 @@ Two concrete disqualifiers beyond the philosophical one:
 
 **Reversal cost:** Low in Phase 0, high after Phase 2. Decide before writing the schema.
 
-## D3. Self-built SSE over `LISTEN/NOTIFY` — *corrected*
+## D3. Self-built SSE over `LISTEN/NOTIFY` — _corrected_
 
 An earlier draft of this plan claimed serverless killed this design. That was wrong, and the correction matters because it restores the option you'd actually learn the most from.
 
@@ -47,7 +47,7 @@ event: invalidate
 data: {"topic":"facility:42","kind":"availability"}
 ```
 
-Emit the `parking_event` id as the SSE event id. On reconnect the browser sends `Last-Event-ID` automatically, and you can replay hints for events since that id — which means even the *window* during reconnect is covered, not just the steady state. This is a genuinely nice property that falls out of D7's event table for free.
+Emit the `parking_event` id as the SSE event id. On reconnect the browser sends `Last-Event-ID` automatically, and you can replay hints for events since that id — which means even the _window_ during reconnect is covered, not just the steady state. This is a genuinely nice property that falls out of D7's event table for free.
 
 **NOTIFY's constraints still bind:** fire-and-forget, no delivery guarantee, 8KB payload cap. Never ship state through it.
 
@@ -57,11 +57,11 @@ This is the part that actually needs care, and it's a Postgres constraint rather
 
 **`LISTEN` does not work through transaction-mode pooling.** Supavisor has had this open as a feature request since 2023, and applications relying on `LISTEN/NOTIFY` through the transaction pooler have broken in the field. You need **two connection strings**:
 
-| Purpose | Connection | Why |
-|---|---|---|
-| Ordinary queries and mutations | Transaction pooler (port 6543) | Serverless-safe, high concurrency |
+| Purpose                                  | Connection                           | Why                                    |
+| ---------------------------------------- | ------------------------------------ | -------------------------------------- |
+| Ordinary queries and mutations           | Transaction pooler (port 6543)       | Serverless-safe, high concurrency      |
 | The `LISTEN` connection in the SSE route | Session pooler (port 5432) or direct | Session state is required for `LISTEN` |
-| Migrations | Direct | Needs session-level state |
+| Migrations                               | Direct                               | Needs session-level state              |
 
 Consequences to hold in mind:
 
@@ -70,11 +70,11 @@ Consequences to hold in mind:
 - **Instance fan-out.** Fluid compute reuses instances, but there will be several, each with its own listener. That's fine — NOTIFY broadcasts to all listeners — but it means the connection count scales with instances, not just users.
 - **Billing shape.** Active CPU pricing means an idle SSE connection costs almost nothing in CPU, but provisioned memory time still accrues for the open duration. At this project's scale it's noise; it's worth knowing why the bill has a floor.
 
-**The scaling escape hatch, documented now and not built:** when connection count becomes the binding constraint, the fix is one long-lived process (Fly, Railway) holding a *single* `LISTEN` connection and fanning out to many SSE clients — or Supabase Realtime, which is that same architecture as a managed service. Because the client contract is just a topic and an invalidation hint, swapping the transport later touches no domain code. Write the ADR now while the reasoning is fresh.
+**The scaling escape hatch, documented now and not built:** when connection count becomes the binding constraint, the fix is one long-lived process (Fly, Railway) holding a _single_ `LISTEN` connection and fanning out to many SSE clients — or Supabase Realtime, which is that same architecture as a managed service. Because the client contract is just a topic and an invalidation hint, swapping the transport later touches no domain code. Write the ADR now while the reasoning is fresh.
 
 ## D4. Reservations are capacity holds, not spot claims
 
-**Decision:** A reservation holds *a unit of capacity in a zone*, not bay A102. The physical spot is assigned at the gate.
+**Decision:** A reservation holds _a unit of capacity in a zone_, not bay A102. The physical spot is assigned at the gate.
 
 **Why:** This is how real garages work, and for a good reason — if a reservation names a specific bay, the system must handle a stranger parking in that bay, and it has no enforcement mechanism. Holding capacity makes that scenario a non-event.
 
@@ -90,7 +90,7 @@ RETURNING id;
 
 Zero rows = CONFLICT. Backed by a `CHECK (held_count + occupied_count <= capacity)` constraint so the invariant survives any code path.
 
-This is a *different* concurrency problem from row locking — it's hot-row contention on the zone counter, which is the more interesting one to learn.
+This is a _different_ concurrency problem from row locking — it's hot-row contention on the zone counter, which is the more interesting one to learn.
 
 ## D5. Spot state is physical occupancy only
 
@@ -112,7 +112,7 @@ AVAILABLE ──block───> BLOCKED  ──unblock──> AVAILABLE
 
 **Why:** A hold with no TTL leaks inventory permanently — the single most common way a booking system silently degrades. The original §10 state machine had no exit from RESERVED at all.
 
-**Mechanics:** Lazy expiry on read (treat `held_until < now()` as expired everywhere) *plus* a sweeper that decrements the zone counter and writes a `reservation.expired` event. Lazy alone leaves the counter wrong; the sweeper alone leaves a race window.
+**Mechanics:** Lazy expiry on read (treat `held_until < now()` as expired everywhere) _plus_ a sweeper that decrements the zone counter and writes a `reservation.expired` event. Lazy alone leaves the counter wrong; the sweeper alone leaves a race window.
 
 **Run the sweeper as `pg_cron` inside Postgres.** Vercel Cron on Pro can do minute-level schedules and would work, but `pg_cron` needs no deploy target, no auth on the endpoint, no cold start, and keeps the job next to the data it corrects. It also can't be accidentally invoked twice by a retry. Use Vercel Cron only for jobs that genuinely need application code.
 
@@ -157,12 +157,12 @@ Application code can be bypassed by a script, a migration, or a bug. These canno
 
 **Decision:**
 
-| Concern | Authority | Rule on conflict |
-|---|---|---|
-| Physical occupancy | The facility | Facility wins, always. A car is in the bay or it isn't; reality doesn't roll back. |
-| Reservations, identity, pricing | The network | Server wins. Only it sees all users. |
+| Concern                         | Authority    | Rule on conflict                                                                   |
+| ------------------------------- | ------------ | ---------------------------------------------------------------------------------- |
+| Physical occupancy              | The facility | Facility wins, always. A car is in the bay or it isn't; reality doesn't roll back. |
+| Reservations, identity, pricing | The network  | Server wins. Only it sees all users.                                               |
 
-**Consequence:** on offline replay, physical events (`entry.detected`, `exit.detected`) are applied unconditionally and may trigger *compensating actions* — an honored reservation that can no longer be honored becomes a refund or a relocation, not a rejected event. Logical events yield to server state.
+**Consequence:** on offline replay, physical events (`entry.detected`, `exit.detected`) are applied unconditionally and may trigger _compensating actions_ — an honored reservation that can no longer be honored becomes a refund or a relocation, not a rejected event. Logical events yield to server state.
 
 Writing this down is what makes reconciliation tractable rather than mysterious.
 
@@ -170,7 +170,7 @@ Writing this down is what makes reconciliation tractable rather than mysterious.
 
 **Decision:** `(device_id, local_seq)` with a unique constraint, plus a stored response body.
 
-**Why the stored response:** a naive unique-constraint-swallow makes a retry look like a failure to the device, which then retries forever. Return the *original* response on duplicate.
+**Why the stored response:** a naive unique-constraint-swallow makes a retry look like a failure to the device, which then retries forever. Return the _original_ response on duplicate.
 
 `local_seq` is a monotonic counter persisted on the device, surviving restart. Ordering within a device is by `local_seq`; there is deliberately **no global ordering** across devices — don't build one.
 
@@ -178,7 +178,7 @@ Writing this down is what makes reconciliation tractable rather than mysterious.
 
 **Decision:** Every facility periodically pushes a full-state snapshot: "here are my 120 bays and their current states." Derived occupancy state is overwritten wholesale from it.
 
-**Why this is the thing most likely to be missed:** event replay will not converge in the real world. Sensors miss exits. Cars tailgate through gates. Spots get stuck OCCUPIED forever with no matching exit event. Events give you the *why*; snapshots give you the *truth*. Retrofitting snapshots after the event model has hardened is miserable — design the endpoint in Phase 0 even if it isn't called until Phase 4.
+**Why this is the thing most likely to be missed:** event replay will not converge in the real world. Sensors miss exits. Cars tailgate through gates. Spots get stuck OCCUPIED forever with no matching exit event. Events give you the _why_; snapshots give you the _truth_. Retrofitting snapshots after the event model has hardened is miserable — design the endpoint in Phase 0 even if it isn't called until Phase 4.
 
 Every snapshot-driven correction writes a `spot.reconciled` event, so drift is measurable.
 
@@ -207,7 +207,7 @@ parking-network/
 └── turbo.json
 ```
 
-Two apps, not four. The operator dashboard is a route group in `web`, not a separate deployable — it shares auth, components, and data layer with the user app, and splitting it buys nothing but configuration. The terminal *is* separate, because it deploys differently and must run when the network doesn't (see D16). `protocol` exists so the device contract can't drift between the two.
+Two apps, not four. The operator dashboard is a route group in `web`, not a separate deployable — it shares auth, components, and data layer with the user app, and splitting it buys nothing but configuration. The terminal _is_ separate, because it deploys differently and must run when the network doesn't (see D16). `protocol` exists so the device contract can't drift between the two.
 
 Split further only when a boundary demonstrably hurts.
 
@@ -235,7 +235,7 @@ The terminal also gets device auth (operator-issued long-lived tokens) rather th
 
 # Part 2 — Phased Plan
 
-Phases are ordered by *risk retired*, not by feature visibility. The UI arrives late on purpose.
+Phases are ordered by _risk retired_, not by feature visibility. The UI arrives late on purpose.
 
 **Sizing.** These estimates assume full-time, heads-down work — call it 35–40 focused hours a week. Total to a genuinely complete system: **roughly twelve to fourteen weeks.** That is enough runway to build the thing properly rather than the compressed version, so the scope below restores what the weekend budget had cut: the consumer app is back in the MVP, geospatial discovery is back in Phase 5, and the terminal becomes a real standalone process rather than a browser tab.
 
@@ -243,7 +243,7 @@ Phases are ordered by *risk retired*, not by feature visibility. The UI arrives 
 
 ---
 
-## Phase 1 — Foundations *(week 1)*
+## Phase 1 — Foundations _(week 1)_
 
 **Goal:** a schema that makes the important bugs impossible.
 
@@ -262,7 +262,7 @@ Phases are ordered by *risk retired*, not by feature visibility. The UI arrives 
 
 **Not in this phase:** any UI, any auth, any HTTP.
 
-## Phase 2 — Reservation core, headless *(week 2)*
+## Phase 2 — Reservation core, headless _(week 2)_
 
 **Goal:** prove D4 and D15 before anything can depend on being wrong.
 
@@ -278,7 +278,7 @@ Phases are ordered by *risk retired*, not by feature visibility. The UI arrives 
 
 **Not in this phase:** UI, sessions, devices.
 
-## Phase 3 — Realtime + operator dashboard *(weeks 3–4)*
+## Phase 3 — Realtime + operator dashboard _(weeks 3–4)_
 
 **Goal:** validate D3 end to end with a real screen, on real Vercel.
 
@@ -293,7 +293,7 @@ Phases are ordered by *risk retired*, not by feature visibility. The UI arrives 
 
 **Not in this phase:** the user-facing app, sessions.
 
-## Phase 4 — Sessions and the online terminal *(week 5)*
+## Phase 4 — Sessions and the online terminal _(week 5)_
 
 **Goal:** close the physical loop while the network is perfect.
 
@@ -307,7 +307,7 @@ Phases are ordered by *risk retired*, not by feature visibility. The UI arrives 
 
 **Not in this phase:** offline anything.
 
-## Phase 5 — Offline, idempotency, reconciliation *(weeks 6–9)* ← *the point of the project*
+## Phase 5 — Offline, idempotency, reconciliation _(weeks 6–9)_ ← _the point of the project_
 
 **Goal:** make the network's absence a normal operating condition.
 
@@ -324,7 +324,7 @@ Phases are ordered by *risk retired*, not by feature visibility. The UI arrives 
 
 This is the reason the project exists. Four weeks is not padding — the failure modes here are subtle and the tests that prove them are most of the work.
 
-## Phase 6 — User app and discovery *(weeks 10–11)*
+## Phase 6 — User app and discovery _(weeks 10–11)_
 
 - Consumer app: facility view, live availability, create hold, active session, history
 - PostGIS discovery: nearby facilities, distance sort, `ST_DWithin` over a GiST index
@@ -333,7 +333,7 @@ This is the reason the project exists. Four weeks is not padding — the failure
 
 **Exit criteria:** the full §20 flow from the original proposal, end to end, from a phone.
 
-## Phase 7 — Multi-tenancy hardening and observability *(weeks 12–13)*
+## Phase 7 — Multi-tenancy hardening and observability _(weeks 12–13)_
 
 **Goal:** the things that separate a demo from a system.
 
@@ -351,14 +351,14 @@ In rough order of value: vehicle types and EV spots → pricing model with no pa
 
 **Deferred infrastructure, with explicit triggers:**
 
-| Introduce | Only when |
-|---|---|
-| Dedicated fan-out process, or Supabase Realtime | Phase 7's load test says you're near the connection ceiling |
-| Redis | Genuine cross-request caching need, measured |
-| Read replicas | Read load actually hurts |
-| Partitioning `parking_event` | The table passes ~50M rows |
-| Leaving serverless entirely | Connection limits, not duration limits, become the binding constraint |
-| Anything Kubernetes | Never, for this project |
+| Introduce                                       | Only when                                                             |
+| ----------------------------------------------- | --------------------------------------------------------------------- |
+| Dedicated fan-out process, or Supabase Realtime | Phase 7's load test says you're near the connection ceiling           |
+| Redis                                           | Genuine cross-request caching need, measured                          |
+| Read replicas                                   | Read load actually hurts                                              |
+| Partitioning `parking_event`                    | The table passes ~50M rows                                            |
+| Leaving serverless entirely                     | Connection limits, not duration limits, become the binding constraint |
+| Anything Kubernetes                             | Never, for this project                                               |
 
 ---
 
