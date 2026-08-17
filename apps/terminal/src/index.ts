@@ -1,4 +1,5 @@
 import { createInterface } from "node:readline";
+import { parseCommand } from "./command";
 import { orpc } from "./client";
 
 /**
@@ -49,7 +50,7 @@ async function handleSensorEvent(spotId: string, event: "occupy" | "release"): P
 }
 
 async function handleLine(line: string): Promise<void> {
-  const [command, ...args] = line.trim().split(/\s+/);
+  const { command, args } = parseCommand(line);
   if (!command) return;
 
   if (command === "disconnect") {
