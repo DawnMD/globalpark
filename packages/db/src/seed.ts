@@ -1,21 +1,16 @@
 import postgres from "postgres";
+import { env } from "./env";
 
 /**
  * Phase 1 seed: 1 operator, 1 facility, 3 floors, 6 zones (2 per
  * floor), 120 spots (20 per zone). Idempotent -- truncates and
  * re-inserts rather than requiring a clean database.
  */
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is required (see .env.example)`);
-  return value;
-}
-
 const FLOORS_PER_FACILITY = 3;
 const ZONES_PER_FLOOR = 2;
 const SPOTS_PER_ZONE = 20;
 
-const sql = postgres(requireEnv("DATABASE_URL_SESSION"), { prepare: false });
+const sql = postgres(env.DATABASE_URL_SESSION, { prepare: false });
 
 async function main() {
   await sql.begin(async (tx) => {

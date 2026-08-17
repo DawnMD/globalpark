@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import { env } from "./env";
 
 /**
  * Phase 1 exit criteria (parking-network-plan.md): "you cannot violate
@@ -13,13 +14,7 @@ import postgres from "postgres";
  * the enclosing transaction in Postgres, so without a savepoint the
  * second and third attempts would fail for the wrong reason.
  */
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is required (see .env.example)`);
-  return value;
-}
-
-const sql = postgres(requireEnv("DATABASE_URL_SESSION"), { prepare: false });
+const sql = postgres(env.DATABASE_URL_SESSION, { prepare: false });
 
 async function expectFailure(
   tx: postgres.TransactionSql,
