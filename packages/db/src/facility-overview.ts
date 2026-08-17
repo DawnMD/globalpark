@@ -1,6 +1,6 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "./client";
-import { facility, floor, parkingZone, reservation } from "./schema";
+import { facility, floor, operatorMember, parkingZone, reservation } from "./schema";
 
 /**
  * Read-side queries for the operator dashboard (Phase 3). Kept
@@ -13,12 +13,33 @@ export type FacilitySummary = {
   facilityName: string;
 };
 
-export async function listFacilities(): Promise<FacilitySummary[]> {
+/**
+ * D12-scoped: only facilities belonging to an operator this user is a
+ * member of. Every read below that takes a facilityId is meant to be
+ * reached only after this list (or isFacilityAccessibleToUser) has
+ * confirmed access -- see packages/api/src/facility.ts's auth
+ * middleware.
+ */
+export async function listFacilitiesForUser(userId: string): Promise<FacilitySummary[]> {
   const rows = await db
     .select({ facilityId: facility.id, facilityName: facility.name })
     .from(facility)
+    .innerJoin(operatorMember, eq(operatorMember.operatorId, facility.operatorId))
+    .where(eq(operatorMember.userId, userId))
     .orderBy(asc(facility.name));
   return rows;
+}
+
+export async function isFacilityAccessibleToUser(
+  userId: string,
+  facilityId: string,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ facilityId: facility.id })
+    .from(facility)
+    .innerJoin(operatorMember, eq(operatorMember.operatorId, facility.operatorId))
+    .where(and(eq(facility.id, facilityId), eq(operatorMember.userId, userId)));
+  return row !== undefined;
 }
 
 export type ZoneOverview = {
