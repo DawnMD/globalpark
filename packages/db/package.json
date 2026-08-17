@@ -1,0 +1,28 @@
+{
+  "name": "@parking-network/db",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/client.ts",
+  "types": "./src/client.ts",
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "studio": "drizzle-kit studio",
+    "seed": "tsx src/seed.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "echo \"db: no linter configured yet\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx src/test-invariants.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.36.4",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "drizzle-kit": "^0.28.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
