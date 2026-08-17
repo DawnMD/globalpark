@@ -18,17 +18,17 @@
   "dependencies": {
     "@parking-network/domain": "workspace:*",
     "@t3-oss/env-core": "^0.13.11",
-    "better-auth": "^1.2.7",
+    "better-auth": "^1.6.29",
     "drizzle-orm": "^0.36.4",
-    "postgres": "^3.4.5",
+    "postgres": "^3.4.9",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^24",
     "drizzle-kit": "^0.28.1",
     "fast-check": "^3.23.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.6.3",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }
 }
