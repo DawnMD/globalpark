@@ -10,7 +10,7 @@ import {
   rawSql,
   type TestZoneFixture,
 } from "@parking-network/db/src/test/fixtures";
-import { entryProcedure, exitProcedure, sensorEventProcedure } from "./session";
+import { entryProcedure, exitProcedure, resolvePlateProcedure, sensorEventProcedure } from "./session";
 
 /**
  * Exercises the device-authenticated procedures directly via
@@ -109,5 +109,25 @@ describe("session oRPC procedures (Phase 4, headless)", () => {
     const result = await sensorEvent({ spotId, event: "occupy" });
 
     expect(result).toEqual({ ok: true, status: "OCCUPIED" });
+  });
+
+  it("resolvePlate returns the same vehicle id for a repeat plate, and entry accepts it", async () => {
+    const { facilityId } = await setUpDevice();
+    await createTestSpots(fixture!.zoneId, 1);
+    const context = () => ({
+      session: null,
+      device: { deviceId: deviceId!, facilityId, kind: "TERMINAL" as const },
+    });
+    const resolvePlate = resolvePlateProcedure.callable({ context });
+    const plate = `TEST-${randomUUID()}`;
+
+    const first = await resolvePlate({ licensePlate: plate });
+    const second = await resolvePlate({ licensePlate: plate });
+    expect(second.vehicleId).toBe(first.vehicleId);
+    vehicleIds.push(first.vehicleId);
+
+    const entry = entryProcedure.callable({ context });
+    const result = await entry({ vehicleId: first.vehicleId });
+    expect(result.ok).toBe(true);
   });
 });

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { SPOT_EVENTS } from "@parking-network/domain";
 import { startSession, endSessionForVehicle } from "@parking-network/db/src/sessions";
 import { applySpotTransition, isSpotInFacility } from "@parking-network/db/src/spot-transitions";
+import { resolveVehicleByPlate } from "@parking-network/db/src/vehicles";
 import { deviceAuthed } from "./auth-middleware";
 
 /**
@@ -95,8 +96,25 @@ export const sensorEventProcedure = deviceAuthed
     return applySpotTransition(input.spotId, input.event);
   });
 
+const resolvePlateInputSchema = z.object({ licensePlate: z.string().min(1) });
+const resolvePlateOutputSchema = z.object({ vehicleId: z.string().uuid() });
+
+/**
+ * A terminal reads a license plate, not a vehicle id -- this is how it
+ * turns one into the other before calling entry/exit. Device-authed
+ * (not public) even though vehicles themselves aren't facility-scoped
+ * (D12): only authenticated devices get to mint/look up vehicle rows.
+ */
+export const resolvePlateProcedure = deviceAuthed
+  .input(resolvePlateInputSchema)
+  .output(resolvePlateOutputSchema)
+  .handler(async ({ input }) => ({
+    vehicleId: await resolveVehicleByPlate(input.licensePlate),
+  }));
+
 export const sessionRouter = {
   entry: entryProcedure,
   exit: exitProcedure,
   sensorEvent: sensorEventProcedure,
+  resolvePlate: resolvePlateProcedure,
 };
