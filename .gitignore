@@ -12,3 +12,6 @@ build/
 coverage/
 *.sqlite
 *.sqlite-journal
+
+.vercel
+.env*
