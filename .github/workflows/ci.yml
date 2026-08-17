@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    # supabase/postgres, not plain postgres: it ships postgis and
+    # pg_cron pre-loaded (shared_preload_libraries already set), which
+    # is what 0000_enable_extensions.sql needs. A stock postgres image
+    # can't CREATE EXTENSION pg_cron without a custom shared_preload_libraries
+    # config baked into the image at boot.
+    services:
+      postgres:
+        image: supabase/postgres:15.6.1.146
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL_SESSION: postgresql://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL_DIRECT: postgresql://postgres:postgres@localhost:5432/postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.20.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      - run: pnpm build
+
+      # "migrations-apply-cleanly" exit criterion: a fresh database,
+      # every migration in order, no manual fixups.
+      - name: Apply migrations
+        run: pnpm db:migrate
+
+      - name: Seed
+        run: pnpm db:seed
+
+      # Runs packages/db's invariant-violation probe (and any other
+      # workspace's tests, once they exist) against the freshly
+      # migrated + seeded database.
+      - run: pnpm test
