@@ -39,10 +39,7 @@ async function handleExit(plate: string): Promise<void> {
   }
 }
 
-async function handleSensorEvent(
-  spotId: string,
-  event: "occupy" | "release",
-): Promise<void> {
+async function handleSensorEvent(spotId: string, event: "occupy" | "release"): Promise<void> {
   const result = await orpc.session.sensorEvent({ spotId, event });
   if (result.ok) {
     console.log(`${event.toUpperCase()} OK: spot ${spotId} -> ${result.status}`);
@@ -114,12 +111,14 @@ rl.prompt();
 let closed = false;
 let pending: Promise<void> = Promise.resolve();
 rl.on("line", (line) => {
-  pending = pending.then(() => handleLine(line)).finally(() => {
-    // A command still in flight when input ends (EOF/Ctrl+D) finishes
-    // after "close" has already fired -- prompting a closed interface
-    // throws ERR_USE_AFTER_CLOSE.
-    if (!closed) rl.prompt();
-  });
+  pending = pending
+    .then(() => handleLine(line))
+    .finally(() => {
+      // A command still in flight when input ends (EOF/Ctrl+D) finishes
+      // after "close" has already fired -- prompting a closed interface
+      // throws ERR_USE_AFTER_CLOSE.
+      if (!closed) rl.prompt();
+    });
 });
 rl.on("close", () => {
   closed = true;

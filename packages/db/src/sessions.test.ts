@@ -66,7 +66,10 @@ describe("startSession (D4/D5/D9, Phase 4)", () => {
     await createTestSpots(fixture.zoneId, 1);
     await startSession({ facilityId: fixture.facilityId, vehicleId: await vehicle() });
 
-    const result = await startSession({ facilityId: fixture.facilityId, vehicleId: await vehicle() });
+    const result = await startSession({
+      facilityId: fixture.facilityId,
+      vehicleId: await vehicle(),
+    });
 
     expect(result).toEqual({ ok: false, reason: "NO_AVAILABLE_SPOT" });
   });
@@ -76,7 +79,10 @@ describe("startSession (D4/D5/D9, Phase 4)", () => {
     await createTestSpots(fixture.zoneId, 1);
     await createHold({ zoneId: fixture.zoneId, userId: randomUUID() });
 
-    const result = await startSession({ facilityId: fixture.facilityId, vehicleId: await vehicle() });
+    const result = await startSession({
+      facilityId: fixture.facilityId,
+      vehicleId: await vehicle(),
+    });
 
     expect(result).toEqual({ ok: false, reason: "NO_CAPACITY" });
   });
@@ -163,7 +169,10 @@ describe("endSessionForVehicle (D5, Phase 4)", () => {
     await startSession({ facilityId: fixture.facilityId, vehicleId: first });
     await endSessionForVehicle(first, fixture.facilityId);
 
-    const result = await startSession({ facilityId: fixture.facilityId, vehicleId: await vehicle() });
+    const result = await startSession({
+      facilityId: fixture.facilityId,
+      vehicleId: await vehicle(),
+    });
 
     expect(result.ok).toBe(true);
   });

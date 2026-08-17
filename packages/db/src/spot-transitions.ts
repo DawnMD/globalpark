@@ -37,8 +37,7 @@ const KIND_BY_EVENT: Record<SpotEvent, SpotEventKind> = {
 };
 
 export type ApplySpotTransitionResult =
-  | { ok: true; status: SpotStatus }
-  | { ok: false; reason: string };
+  { ok: true; status: SpotStatus } | { ok: false; reason: string };
 
 /**
  * D5's raw spot vocabulary (occupy/release/block/unblock/fault/repair),

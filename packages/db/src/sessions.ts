@@ -1,14 +1,18 @@
 import { and, eq, sql } from "drizzle-orm";
 import { SESSION_EVENT_KINDS } from "@parking-network/domain";
 import { db } from "./client";
-import { floor, parkingEvent, parkingSession, parkingSpot, parkingZone, reservation } from "./schema";
+import {
+  floor,
+  parkingEvent,
+  parkingSession,
+  parkingSpot,
+  parkingZone,
+  reservation,
+} from "./schema";
 import { resolveFacilityTopic } from "./topics";
 
 export type StartSessionFailureReason =
-  | "NO_AVAILABLE_SPOT"
-  | "RESERVATION_NOT_AVAILABLE"
-  | "NO_CAPACITY"
-  | "VEHICLE_ALREADY_PARKED";
+  "NO_AVAILABLE_SPOT" | "RESERVATION_NOT_AVAILABLE" | "NO_CAPACITY" | "VEHICLE_ALREADY_PARKED";
 
 export type StartSessionResult =
   | { ok: true; sessionId: string; spotId: string; spotLabel: string }

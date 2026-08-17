@@ -10,7 +10,12 @@ import {
   rawSql,
   type TestZoneFixture,
 } from "@parking-network/db/src/test/fixtures";
-import { entryProcedure, exitProcedure, resolvePlateProcedure, sensorEventProcedure } from "./session";
+import {
+  entryProcedure,
+  exitProcedure,
+  resolvePlateProcedure,
+  sensorEventProcedure,
+} from "./session";
 
 /**
  * Exercises the device-authenticated procedures directly via
@@ -55,7 +60,10 @@ describe("session oRPC procedures (Phase 4, headless)", () => {
     const { facilityId } = await setUpDevice();
     await createTestSpots(fixture!.zoneId, 1);
     const entry = entryProcedure.callable({
-      context: () => ({ session: null, device: { deviceId: deviceId!, facilityId, kind: "TERMINAL" } }),
+      context: () => ({
+        session: null,
+        device: { deviceId: deviceId!, facilityId, kind: "TERMINAL" },
+      }),
     });
 
     const result = await entry({ vehicleId: await vehicle() });
@@ -91,7 +99,10 @@ describe("session oRPC procedures (Phase 4, headless)", () => {
     const otherFixture = await createTestZone(1);
     const [otherSpotId] = await createTestSpots(otherFixture.zoneId, 1);
     const sensorEvent = sensorEventProcedure.callable({
-      context: () => ({ session: null, device: { deviceId: deviceId!, facilityId, kind: "SENSOR" } }),
+      context: () => ({
+        session: null,
+        device: { deviceId: deviceId!, facilityId, kind: "SENSOR" },
+      }),
     });
 
     await expect(sensorEvent({ spotId: otherSpotId, event: "occupy" })).rejects.toThrow();
@@ -103,7 +114,10 @@ describe("session oRPC procedures (Phase 4, headless)", () => {
     const { facilityId } = await setUpDevice();
     const [spotId] = await createTestSpots(fixture!.zoneId, 1);
     const sensorEvent = sensorEventProcedure.callable({
-      context: () => ({ session: null, device: { deviceId: deviceId!, facilityId, kind: "SENSOR" } }),
+      context: () => ({
+        session: null,
+        device: { deviceId: deviceId!, facilityId, kind: "SENSOR" },
+      }),
     });
 
     const result = await sensorEvent({ spotId, event: "occupy" });
