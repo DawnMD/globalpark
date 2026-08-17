@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["DATABASE_URL", "DATABASE_URL_SESSION", "DATABASE_URL_DIRECT"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
