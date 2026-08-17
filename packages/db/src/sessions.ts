@@ -24,16 +24,31 @@ class StartSessionConflict extends Error {
   }
 }
 
-/** postgres.js error shape for a unique-violation (SQLSTATE 23505). */
+/**
+ * postgres.js error shape for a unique-violation (SQLSTATE 23505).
+ *
+ * drizzle-orm 0.45 wraps every driver error in a `DrizzleQueryError`, so
+ * these fields moved from the thrown error onto its `cause`. Walking the
+ * chain rather than reaching through one fixed level keeps this working
+ * whichever layer ends up holding the postgres.js fields -- a miss here
+ * is silent and expensive, turning a handled VEHICLE_ALREADY_PARKED
+ * conflict back into an unhandled 500.
+ */
 function isUniqueViolation(err: unknown, constraintName: string): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    (err as { code?: string }).code === "23505" &&
-    "constraint_name" in err &&
-    (err as { constraint_name?: string }).constraint_name === constraintName
-  );
+  // Bounded in case a driver ever hands back a self-referencing cause.
+  for (let cur: unknown = err, depth = 0; cur != null && depth < 10; depth++) {
+    if (
+      typeof cur === "object" &&
+      "code" in cur &&
+      (cur as { code?: string }).code === "23505" &&
+      "constraint_name" in cur &&
+      (cur as { constraint_name?: string }).constraint_name === constraintName
+    ) {
+      return true;
+    }
+    cur = (cur as { cause?: unknown }).cause;
+  }
+  return false;
 }
 
 export type StartSessionInput = {
