@@ -1,5 +1,5 @@
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { facility } from "./facility.js";
+import { facility } from "./facility";
 
 export const floor = pgTable("floor", {
   id: uuid("id").primaryKey().defaultRandom(),

@@ -1,6 +1,6 @@
 import { pgEnum, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
-import { parkingZone } from "./zone.js";
-import { vehicle } from "./vehicle.js";
+import { parkingZone } from "./zone";
+import { vehicle } from "./vehicle";
 
 // HELD -> CONVERTED (a session starts) or EXPIRED (D6) or CANCELLED.
 export const reservationStatusEnum = pgEnum("reservation_status", [

@@ -1,5 +1,5 @@
 import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { parkingZone } from "./zone.js";
+import { parkingZone } from "./zone";
 
 // D5: physical occupancy only. RESERVED is deliberately not a spot
 // state -- reservations hold zone capacity (D4), not a specific spot.

@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
 import { pgEnum, pgTable, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
-import { parkingSpot } from "./spot.js";
-import { vehicle } from "./vehicle.js";
-import { reservation } from "./reservation.js";
+import { parkingSpot } from "./spot";
+import { vehicle } from "./vehicle";
+import { reservation } from "./reservation";
 
 export const sessionStatusEnum = pgEnum("session_status", ["ACTIVE", "ENDED"]);
 

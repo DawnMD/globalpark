@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { check, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { floor } from "./floor.js";
+import { floor } from "./floor";
 
 // Named parking_zone (not "zone") to match the literal SQL in D4/D8 --
 // the capacity-hold UPDATE and the CHECK constraint reference this name.

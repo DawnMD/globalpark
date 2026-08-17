@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { operator } from "./operator.js";
-import { geographyPoint } from "./types.js";
+import { operator } from "./operator";
+import { geographyPoint } from "./types";
 
 export const facility = pgTable("facility", {
   id: uuid("id").primaryKey().defaultRandom(),

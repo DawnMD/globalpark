@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "./schema/index.js";
+import * as schema from "./schema/index";
 
 /**
  * Transaction-pooled connection (port 6543) for ordinary queries and

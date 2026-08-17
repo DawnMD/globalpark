@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { bigint, bigserial, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
-import { device } from "./device.js";
+import { device } from "./device";
 
 // D7: one append-only table, appended inside the same transaction as
 // the state change it records. It is simultaneously the audit trail,

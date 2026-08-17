@@ -1,5 +1,5 @@
 import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { facility } from "./facility.js";
+import { facility } from "./facility";
 
 export const deviceKindEnum = pgEnum("device_kind", ["TERMINAL", "SENSOR", "GATE"]);
 
