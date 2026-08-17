@@ -9,12 +9,12 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     // Transaction pooler (port 6543). Ordinary queries and mutations.
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.url(),
     // Session pooler (port 5432). Required for LISTEN -- the transaction
     // pooler does not support it (D3b). Used only by the SSE route handler.
-    DATABASE_URL_SESSION: z.string().url(),
+    DATABASE_URL_SESSION: z.url(),
     // Direct/session-level connection used only for running migrations.
-    DATABASE_URL_DIRECT: z.string().url(),
+    DATABASE_URL_DIRECT: z.url(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

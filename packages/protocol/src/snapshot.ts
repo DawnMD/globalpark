@@ -14,15 +14,15 @@ import { z } from "zod";
  * hardened is the expensive way to learn this lesson.
  */
 export const spotSnapshotSchema = z.object({
-  spotId: z.string().uuid(),
+  spotId: z.uuid(),
   status: z.enum(["AVAILABLE", "OCCUPIED", "BLOCKED", "OUT_OF_SERVICE"]),
 });
 export type SpotSnapshot = z.infer<typeof spotSnapshotSchema>;
 
 export const facilitySnapshotSchema = z.object({
-  facilityId: z.string().uuid(),
-  deviceId: z.string().uuid(),
-  generatedAt: z.string().datetime(),
+  facilityId: z.uuid(),
+  deviceId: z.uuid(),
+  generatedAt: z.iso.datetime(),
   spots: z.array(spotSnapshotSchema),
 });
 export type FacilitySnapshot = z.infer<typeof facilitySnapshotSchema>;

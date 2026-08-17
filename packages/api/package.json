@@ -16,7 +16,7 @@
     "@orpc/server": "^1.15.0",
     "@parking-network/db": "workspace:*",
     "@parking-network/domain": "workspace:*",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24",

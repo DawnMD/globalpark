@@ -18,10 +18,10 @@ import { authed } from "./auth-middleware";
  */
 
 export const listFacilitiesProcedure = authed
-  .output(z.array(z.object({ facilityId: z.string().uuid(), facilityName: z.string() })))
+  .output(z.array(z.object({ facilityId: z.uuid(), facilityName: z.string() })))
   .handler(async ({ context }) => listFacilitiesForUser(context.session.user.id));
 
-const facilityIdInputSchema = z.object({ facilityId: z.string().uuid() });
+const facilityIdInputSchema = z.object({ facilityId: z.uuid() });
 
 async function assertFacilityAccess(userId: string, facilityId: string): Promise<void> {
   const allowed = await isFacilityAccessibleToUser(userId, facilityId);
@@ -35,7 +35,7 @@ export const getFacilityZonesProcedure = authed
   .output(
     z.array(
       z.object({
-        zoneId: z.string().uuid(),
+        zoneId: z.uuid(),
         zoneName: z.string(),
         floorName: z.string(),
         floorLevel: z.number().int(),
@@ -55,8 +55,8 @@ export const getFacilityReservationsProcedure = authed
   .output(
     z.array(
       z.object({
-        reservationId: z.string().uuid(),
-        zoneId: z.string().uuid(),
+        reservationId: z.uuid(),
+        zoneId: z.uuid(),
         zoneName: z.string(),
         status: z.enum(["HELD", "EXPIRED", "CANCELLED", "CONVERTED"]),
         heldUntil: z.date(),

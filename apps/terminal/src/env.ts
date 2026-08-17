@@ -9,7 +9,7 @@ import { z } from "zod";
  */
 export const env = createEnv({
   server: {
-    TERMINAL_SERVER_URL: z.string().url(),
+    TERMINAL_SERVER_URL: z.url(),
     TERMINAL_DEVICE_TOKEN: z.string().min(1),
   },
   runtimeEnv: process.env,

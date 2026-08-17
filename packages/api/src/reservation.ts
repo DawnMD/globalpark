@@ -17,14 +17,14 @@ import { createHold, releaseHold } from "@parking-network/db/src/reservations";
  * model them.
  */
 const createHoldInputSchema = z.object({
-  zoneId: z.string().uuid(),
-  userId: z.string().uuid(),
-  vehicleId: z.string().uuid().optional(),
+  zoneId: z.uuid(),
+  userId: z.uuid(),
+  vehicleId: z.uuid().optional(),
   holdDurationMs: z.number().int().positive().optional(),
 });
 
 const createHoldOutputSchema = z.discriminatedUnion("ok", [
-  z.object({ ok: z.literal(true), reservationId: z.string().uuid(), heldUntil: z.date() }),
+  z.object({ ok: z.literal(true), reservationId: z.uuid(), heldUntil: z.date() }),
   z.object({ ok: z.literal(false), reason: z.literal("CONFLICT") }),
 ]);
 
@@ -35,7 +35,7 @@ export const createHoldProcedure = os
   .callable();
 
 const releaseHoldInputSchema = z.object({
-  reservationId: z.string().uuid(),
+  reservationId: z.uuid(),
 });
 
 const releaseHoldOutputSchema = z.discriminatedUnion("ok", [

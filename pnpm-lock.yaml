@@ -49,10 +49,10 @@ importers:
         version: link:../../packages/api
       '@t3-oss/env-core':
         specifier: ^0.13.11
-        version: 0.13.11(typescript@5.9.3)(zod@3.25.76)
+        version: 0.13.11(typescript@5.9.3)(zod@4.4.3)
       zod:
-        specifier: ^3.23.8
-        version: 3.25.76
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^24
@@ -125,8 +125,8 @@ importers:
         specifier: workspace:*
         version: link:../domain
       zod:
-        specifier: ^3.23.8
-        version: 3.25.76
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^24
@@ -148,7 +148,7 @@ importers:
         version: link:../domain
       '@t3-oss/env-core':
         specifier: ^0.13.11
-        version: 0.13.11(typescript@5.9.3)(zod@3.25.76)
+        version: 0.13.11(typescript@5.9.3)(zod@4.4.3)
       better-auth:
         specifier: ^1.6.29
         version: 1.6.29(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(kysely@0.29.5)(postgres@3.4.9))(next@15.5.23(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10(@types/node@24.13.3)(vite@7.3.6(@types/node@24.13.3)(tsx@4.23.12)))
@@ -159,8 +159,8 @@ importers:
         specifier: ^3.4.9
         version: 3.4.9
       zod:
-        specifier: ^3.23.8
-        version: 3.25.76
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^24
@@ -193,8 +193,8 @@ importers:
   packages/protocol:
     dependencies:
       zod:
-        specifier: ^3.23.8
-        version: 3.25.76
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: ^5.9.3
@@ -2162,9 +2162,6 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
@@ -2818,10 +2815,10 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@t3-oss/env-core@0.13.11(typescript@5.9.3)(zod@3.25.76)':
+  '@t3-oss/env-core@0.13.11(typescript@5.9.3)(zod@4.4.3)':
     optionalDependencies:
       typescript: 5.9.3
-      zod: 3.25.76
+      zod: 4.4.3
 
   '@tanstack/query-core@5.101.4': {}
 
@@ -3663,7 +3660,5 @@ snapshots:
   word-wrap@1.2.5: {}
 
   yocto-queue@0.1.0: {}
-
-  zod@3.25.76: {}
 
   zod@4.4.3: {}

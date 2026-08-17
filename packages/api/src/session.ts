@@ -16,16 +16,16 @@ import { deviceAuthed } from "./auth-middleware";
  */
 
 const entryInputSchema = z.object({
-  vehicleId: z.string().uuid(),
+  vehicleId: z.uuid(),
   /** Omit for a walk-up -- D4's "arrived without a hold" path. */
-  reservationId: z.string().uuid().optional(),
+  reservationId: z.uuid().optional(),
 });
 
 const entryOutputSchema = z.discriminatedUnion("ok", [
   z.object({
     ok: z.literal(true),
-    sessionId: z.string().uuid(),
-    spotId: z.string().uuid(),
+    sessionId: z.uuid(),
+    spotId: z.uuid(),
     spotLabel: z.string(),
   }),
   z.object({
@@ -50,7 +50,7 @@ export const entryProcedure = deviceAuthed
     }),
   );
 
-const exitInputSchema = z.object({ vehicleId: z.string().uuid() });
+const exitInputSchema = z.object({ vehicleId: z.uuid() });
 
 const exitOutputSchema = z.discriminatedUnion("ok", [
   z.object({ ok: z.literal(true) }),
@@ -68,7 +68,7 @@ export const exitProcedure = deviceAuthed
   );
 
 const sensorEventInputSchema = z.object({
-  spotId: z.string().uuid(),
+  spotId: z.uuid(),
   event: z.enum(SPOT_EVENTS),
 });
 
@@ -97,7 +97,7 @@ export const sensorEventProcedure = deviceAuthed
   });
 
 const resolvePlateInputSchema = z.object({ licensePlate: z.string().min(1) });
-const resolvePlateOutputSchema = z.object({ vehicleId: z.string().uuid() });
+const resolvePlateOutputSchema = z.object({ vehicleId: z.uuid() });
 
 /**
  * A terminal reads a license plate, not a vehicle id -- this is how it
