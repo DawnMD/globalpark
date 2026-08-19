@@ -40,4 +40,17 @@ $$ LANGUAGE plpgsql;
 -- D6: run inside Postgres via pg_cron rather than Vercel Cron -- no
 -- deploy target, no auth surface on an endpoint, and a retried
 -- invocation can't double-run it the way an HTTP-triggered job could.
-SELECT cron.schedule('expire-stale-holds', '* * * * *', 'SELECT expire_stale_holds();');
+--
+-- Conditional on the extension actually being present: 0000 makes
+-- pg_cron optional because it has no Windows build, and a local
+-- database without it still gets the function above -- expireHolds()
+-- calls it directly on read paths and in tests.
+DO $do$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    PERFORM cron.schedule('expire-stale-holds', '* * * * *', 'SELECT expire_stale_holds();');
+  ELSE
+    RAISE WARNING 'pg_cron not installed: expire-stale-holds is not scheduled.';
+  END IF;
+END
+$do$;
