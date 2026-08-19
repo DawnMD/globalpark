@@ -4,6 +4,27 @@ This supersedes the open questions in §17 and §21 of the original proposal. Ev
 
 ---
 
+# Status — 2026-08-19
+
+**Phases 1 through 4 are built and on `master`. Phase 5 has not started.**
+
+| Phase                                    | State                                                                             |
+| ---------------------------------------- | --------------------------------------------------------------------------------- |
+| 1 — Foundations                          | Done. Schema, constraints, NOTIFY trigger, seed, CI, ADRs 0001–0004.              |
+| 2 — Reservation core                     | Done. State machines, holds, `pg_cron` sweeper, 200-way adversarial test.         |
+| 3 — Realtime + operator dashboard        | Done, deployed to Vercel. `Last-Event-ID` replay is live, not stubbed.            |
+| 4 — Sessions + online terminal           | Done. Standalone terminal process, device tokens, ADR-0005.                       |
+| 5 — Offline, idempotency, reconciliation | **Not started. This is the next thing.**                                          |
+| 6 — User app and discovery               | Not started. PostGIS is installed; `facility.location` is nullable and unseeded.  |
+| 7 — Multi-tenancy hardening              | Not started. No RLS policies exist; tenancy is enforced in application code only. |
+
+Two things worth knowing that the phase list alone doesn't say:
+
+- **D10's idempotency is half-built.** `local_seq`, the `(device_id, local_seq)` unique index, and the stored-response column all exist in the schema, but no write path populates them. Every device event today is non-idempotent, and the constraint has never fired. Wiring it is Phase 5 work, but it is not a fresh design problem — the hard part is already in the migration.
+- **The recent commits are maintenance, not progress.** Next 16, zod 4, drizzle 0.45, vitest 4, fast-check 4. Good hygiene (see D17), but the offline work is where the project's actual purpose lives.
+
+---
+
 # Part 1 — Locked Decisions
 
 ## D1. PostgreSQL, not Convex
@@ -200,6 +221,7 @@ parking-network/
 │   ├── web/          # user app, operator dashboard — route groups
 │   └── terminal/     # standalone Node terminal + device simulator
 ├── packages/
+│   ├── api/          # oRPC router and procedures, shared by web and terminal
 │   ├── db/           # drizzle schema, migrations, queries
 │   ├── domain/       # state machines, event types, zod schemas
 │   └── protocol/     # device↔server contract, shared by both apps
@@ -210,6 +232,8 @@ parking-network/
 Two apps, not four. The operator dashboard is a route group in `web`, not a separate deployable — it shares auth, components, and data layer with the user app, and splitting it buys nothing but configuration. The terminal _is_ separate, because it deploys differently and must run when the network doesn't (see D16). `protocol` exists so the device contract can't drift between the two.
 
 Split further only when a boundary demonstrably hurts.
+
+**`packages/api` was added in Phase 3, and it earned its place.** The oRPC router originally lived inside `apps/web`. Once the terminal needed a typed client against the same procedures, keeping the router inside a Next.js app meant the terminal would have had to depend on `web` — a deployable depending on another deployable, for types. Extracting the router is the boundary demonstrably hurting, so the split is exactly the trigger this decision described. `web` now mounts the router at `/api/rpc`; `terminal` calls it over HTTP with a device token.
 
 ## D14. Skip the dual prototype
 
@@ -231,6 +255,35 @@ Two users proves nothing. This test is written in Phase 2 and runs in CI forever
 
 The terminal also gets device auth (operator-issued long-lived tokens) rather than user sessions, since it is infrastructure, not a person.
 
+## D17. Latest stable everything, and stay there
+
+**Decision:** every dependency tracks the latest stable major. No pinning to an older line for comfort. Upgrades happen as their own commits, not folded into feature work.
+
+Where that currently lands: Node 20.9+, pnpm 11, TypeScript 5.9, Next.js 16 (React 19), Drizzle ORM 0.45 with drizzle-kit 0.31, zod 4, vitest 4, fast-check 4, ESLint 10, Better Auth 1.6, oRPC 1.15.
+
+**Why:** this project has no users, no SLA, and no migration window to protect. That is exactly the condition under which staying current is nearly free, and it's the only time it ever will be. Deferring a major upgrade doesn't avoid the cost, it compounds it — a Next 15→16 jump is an afternoon, a 15→18 jump is a week of guessing which change broke what. The same argument applies with more force to Drizzle, which is pre-1.0 and moving.
+
+**The rule that makes this safe:** upgrades land as isolated commits with CI green, never mixed into a feature. The history already does this (`feat: upgrade zod to 4…`, `test(db): upgrade fast-check to 4`), which is why the Next 16 migration was legible instead of a mystery. Keep it.
+
+**The cost, stated honestly:** pre-1.0 and freshly-major packages break in ways the changelog doesn't cover. Budget for that rather than being surprised by it. If an upgrade fights back for more than a day, park it behind an ADR and move on — the point is to stay current, not to prove something.
+
+## D18. shadcn/ui on Base UI, adopted last
+
+**Decision:** the UI layer is shadcn/ui backed by **Base UI** (not Radix). It goes in **last, as Phase 8**, after the correctness work is finished.
+
+**Why Base UI:** it's the successor line from the same people behind Radix and MUI Base, shadcn supports it as a first-class backing library, and it's where the ecosystem's accessibility primitives are actually being maintained now. Picking Radix today would mean choosing the branch that is winding down.
+
+**Why shadcn's copy-in model fits this project specifically:** components land in the repo as source you own, not as a versioned dependency. That composes with D17 — there is no component library major upgrade to chase, because there is no component library, just files. It also means the operator dashboard's occupancy grid can be a genuinely custom component sitting next to stock primitives without fighting a theme API.
+
+**Why last, deliberately:** every phase through 7 is about correctness under concurrency, offline convergence, and tenancy. None of that is easier with a design system, and a half-built one is a tax on every screen you touch while the data layer is still moving. The dashboard shipped in Phase 3 on plain CSS and that was the right call. It stays on plain CSS until the system underneath it stops changing.
+
+**Consequences to plan for:**
+
+- Tailwind arrives with shadcn, not before. Don't half-adopt it in Phase 6 "to save time later" — mixed styling is worse than either alternative.
+- The rewrite touches `apps/web` only. `packages/api`, `db`, `domain`, and `protocol` are untouched, which is the whole reason deferring is cheap.
+- The Phase 6 consumer app will be built on plain CSS and then restyled. That's accepted duplicate effort, and it's smaller than the effort of maintaining a design system across four phases of churn.
+- A shadcn/Base UI skill gets added to the toolchain when this phase starts, not now.
+
 ---
 
 # Part 2 — Phased Plan
@@ -241,9 +294,11 @@ Phases are ordered by _risk retired_, not by feature visibility. The UI arrives 
 
 **One decision worth revisiting given the new budget.** A browser-tab simulator with an in-memory queue was the right call at four hours a week. It isn't now. A standalone Node process with a **SQLite queue on disk** costs roughly three extra days and buys the one thing the browser version cannot test: a terminal that is killed mid-write and comes back. That scenario — process dies during replay, restarts, replays again — is exactly where duplicate-event bugs live, and it is the whole point of Phase 5. This is D16.
 
+**Phase 8 is new.** D18 puts the design system last, so the numbered plan now runs to eight phases plus a backlog rather than seven. It doesn't extend the schedule much, because it's a restyle of screens that already work, not new behaviour.
+
 ---
 
-## Phase 1 — Foundations _(week 1)_
+## Phase 1 — Foundations _(week 1)_ — **done**
 
 **Goal:** a schema that makes the important bugs impossible.
 
@@ -262,7 +317,7 @@ Phases are ordered by _risk retired_, not by feature visibility. The UI arrives 
 
 **Not in this phase:** any UI, any auth, any HTTP.
 
-## Phase 2 — Reservation core, headless _(week 2)_
+## Phase 2 — Reservation core, headless _(week 2)_ — **done**
 
 **Goal:** prove D4 and D15 before anything can depend on being wrong.
 
@@ -278,7 +333,7 @@ Phases are ordered by _risk retired_, not by feature visibility. The UI arrives 
 
 **Not in this phase:** UI, sessions, devices.
 
-## Phase 3 — Realtime + operator dashboard _(weeks 3–4)_
+## Phase 3 — Realtime + operator dashboard _(weeks 3–4)_ — **done**
 
 **Goal:** validate D3 end to end with a real screen, on real Vercel.
 
@@ -293,7 +348,7 @@ Phases are ordered by _risk retired_, not by feature visibility. The UI arrives 
 
 **Not in this phase:** the user-facing app, sessions.
 
-## Phase 4 — Sessions and the online terminal _(week 5)_
+## Phase 4 — Sessions and the online terminal _(week 5)_ — **done**
 
 **Goal:** close the physical loop while the network is perfect.
 
@@ -311,9 +366,9 @@ Phases are ordered by _risk retired_, not by feature visibility. The UI arrives 
 
 **Goal:** make the network's absence a normal operating condition.
 
-- SQLite event queue on the terminal, durable across process death
+- SQLite event queue on the terminal, durable across process death. The `disconnect`/`connect` toggle already in `apps/terminal` is the seam this plugs into; today disconnected just refuses to send.
 - Local decision-making while disconnected: the terminal admits cars on its own authority (D9)
-- `(device_id, local_seq)` idempotency with stored responses (D10)
+- `(device_id, local_seq)` idempotency with stored responses (D10). **Half of this already exists** — the column, the partial unique index, and the stored-response column are in the schema and have been since Phase 1. What's missing is every write path populating them, and the duplicate-returns-original-response behaviour. Do this before the queue, not after: an unauthenticated replay against a non-idempotent write path will corrupt data faster than you can read the test output.
 - Replay on reconnect: ordered per device, no global ordering
 - Compensating actions when a hold can no longer be honored
 - Snapshot ingest goes live (D11); `spot.reconciled` events on every correction
@@ -327,9 +382,11 @@ This is the reason the project exists. Four weeks is not padding — the failure
 ## Phase 6 — User app and discovery _(weeks 10–11)_
 
 - Consumer app: facility view, live availability, create hold, active session, history
-- PostGIS discovery: nearby facilities, distance sort, `ST_DWithin` over a GiST index
+- PostGIS discovery: nearby facilities, distance sort, `ST_DWithin` over a GiST index. The extension and the `facility.location` column exist; the column is nullable and unseeded, so this phase starts by giving facilities real coordinates.
 - Map view
 - Multi-operator, multi-facility seed data
+
+**Styling:** plain CSS, same as the Phase 3 dashboard. Per D18 the design system lands in Phase 8 — resist pulling Tailwind in here.
 
 **Exit criteria:** the full §20 flow from the original proposal, end to end, from a phone.
 
@@ -345,7 +402,20 @@ This is the reason the project exists. Four weeks is not padding — the failure
 
 **Exit criteria:** operator A cannot see or mutate operator B's data. You know, with a number, how many concurrent dashboards this architecture supports before the transport must change.
 
-## Phase 8+ — Only after all of the above
+## Phase 8 — Design system pass _(week 14)_
+
+**Goal:** make it look like a product, once the product has stopped moving.
+
+- Tailwind, then shadcn/ui initialised against **Base UI** (D18)
+- Add the shadcn/Base UI skill to the toolchain at the start of this phase
+- Restyle the operator dashboard and the consumer app off plain CSS
+- Keep the occupancy grid custom. It's the one component with real domain logic in its rendering, and stock primitives will fight it
+- Dark mode, since `color-scheme: light dark` is already declared and currently does nothing
+- Accessibility pass: this is the payoff for choosing Base UI, so actually collect it — keyboard paths through the hold and entry flows, focus management on the live-updating grid
+
+**Exit criteria:** no hand-rolled CSS files remain in `apps/web` outside `globals.css` and the occupancy grid. Both apps work in light and dark. Nothing in `packages/` changed during this phase — if something did, D18's premise was wrong and it's worth understanding why.
+
+## Phase 9+ — Only after all of the above
 
 In rough order of value: vehicle types and EV spots → pricing model with no payment processing → analytics over the event log (it's already there) → public read API → external providers → payments.
 
@@ -372,8 +442,14 @@ In rough order of value: vehicle types and EV spots → pricing model with no pa
 
 **Auth: Better Auth.** Resolved. Sessions live in the same Postgres as the tenancy model, so operator scoping and RLS compose instead of being bridged. Devices authenticate separately with operator-issued tokens.
 
+**Resolved: dependency policy.** Latest stable everything, upgraded in isolated commits (D17). The Next 16, zod 4, drizzle 0.45, vitest 4, and fast-check 4 upgrades already landed that way.
+
+**Resolved: the UI stack.** shadcn/ui on Base UI, adopted after Phase 7 as its own phase (D18). Not Radix, and not early.
+
+**Resolved: `packages/api` exists.** D13 said split further only when a boundary demonstrably hurts. It hurt in Phase 3, when the terminal would otherwise have had to depend on `apps/web` for procedure types. Five workspaces now, not four.
+
 **Still genuinely open, and fine to defer:**
 
-- Whether the zone counter should be a denormalized column (as in D4) or a computed aggregate. The counter is faster and the `CHECK` protects it; the aggregate cannot drift. Phase 2's property test will tell you whether drift is real. Decide then.
+- Whether the zone counter should be a denormalized column (as in D4) or a computed aggregate. The counter is faster and the `CHECK` protects it; the aggregate cannot drift. This question is now answerable — `counter-reconciliation.test.ts` has been running in CI since Phase 2. If it has stayed green, drift isn't real under the current write paths and the column stays. Worth closing explicitly rather than leaving open by inertia, with one caveat: Phase 5 adds replay and snapshot correction, which are new ways to write the counter. Re-check after Phase 5 before calling it settled.
 - Whether snapshots (D11) should be full-facility or per-zone. Full is simpler; 120 rows is nothing. Per-zone matters only at a scale this project won't reach.
 - Whether to keep the SSE transport or move to a dedicated fan-out process at the end of Phase 7. Deliberately deferred to a measurement rather than a preference — that's what Phase 7's load test is for.
